@@ -28,17 +28,20 @@ GPIO.setup(Relais,GPIO.OUT)
 
 """  ###################  END SETUP   #################### """
 
-
+print(r.get_tool_pose())
 r.go_to_point([x,y,z,180,0])
 time.sleep(5)
 bSensor = GPIO.input(Sensor)
 while bSensor == True:      #### Wait untils it detects something with the sensor
-    z=z-5
+    z=z-1.0
     if z<=0:
         bSensor = False
+        print("z is",z)
     else:
-        r.go_to_point([x,y,z,180,0])
-        print(r.get_pose())
+        a=[x,y,z,180,0]
+        print(a)
+        r.go_to_point(a)
+        print(r.get_tool_pose())
         bSensor = GPIO.input(Sensor)
         
 GPIO.output(Relais,GPIO.HIGH)   ### Activate the vacuum
