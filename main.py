@@ -1,5 +1,5 @@
 import sys
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 import time
 sys.path.append('../galatae-api/')
 from robot import Robot
@@ -19,25 +19,25 @@ z=z0
 
 pPerfo = [0,250,z0+100,0,0]
           
-GPIO.setmode(GPIO.BCM)
+#GPIO.setmode(GPIO.BCM)
 
 ## definition des pins
 Sensor = 17
 Relais = 18
 Step = False
-bSensor = True
+bSensor = False #True
 
-GPIO.setup(Sensor,GPIO.IN,pull_up_down=GPIO.PUD_UP)
-GPIO.setup(Relais,GPIO.OUT)
+#GPIO.setup(Sensor,GPIO.IN,pull_up_down=GPIO.PUD_UP)
+#GPIO.setup(Relais,GPIO.OUT)
 
 """  ###################  END SETUP   #################### """
 
 print(r.get_tool_pose())
 r.go_to_point([x,y,z0,180,0])
 
-bSensor = GPIO.input(Sensor)
+#bSensor = GPIO.input(Sensor)
 while bSensor == False:      #### Wait untils it detects something with the sensor
-    z=z-1.5
+    z=z-0.1
     if z<=0:
         bSensor = True
         print("z is",z)
@@ -46,10 +46,10 @@ while bSensor == False:      #### Wait untils it detects something with the sens
         #print(point)
         r.go_to_point(point)
         #print(r.get_tool_pose())
-        bSensor = GPIO.input(Sensor)
+        #bSensor = GPIO.input(Sensor)
 
         
-GPIO.output(Relais,GPIO.HIGH)   ### Activate the vacuum
+#GPIO.output(Relais,GPIO.HIGH)   ### Activate the vacuum
 print("Vaccum is activated")
 time.sleep(5)
 print("going up high again")
@@ -60,7 +60,7 @@ y=yperfo
 x=0
 r.go_to_point([x,y,z,110,0])
 print("starting progression towards the perforatrice... waiting for sensor input...")
-bSensor = GPIO.input(Sensor)
+#bSensor = GPIO.input(Sensor)
 while bSensor == False:      #### Wait untils it detects something with the sensor
     y=y+0.1
     if y>=300:
@@ -71,9 +71,9 @@ while bSensor == False:      #### Wait untils it detects something with the sens
         #print(point)
         r.go_to_point(point)
         #print(r.get_tool_pose())
-        bSensor = GPIO.input(Sensor)
+        #bSensor = GPIO.input(Sensor)
 
-GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuun
+#GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuun
 print("Vacuun is desactivated")
 time.sleep(5)
 print("returning to home position")
