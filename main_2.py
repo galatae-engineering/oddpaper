@@ -65,7 +65,7 @@ while (b_random and b_single):
 
 n_max = 10  ## nombre de feuilles maximales autorisées dans la perforatrice
 n_perfo = n_cahier/n_max ## nombre de perforations pour un cahier complet
-n_reste = n_cahier%n_max
+n_reste = n_cahier%n_max ## nombre de feuilles restantes a perforer pour completer le cahier
 print("Nombre de perforations de paquets de 10:", n_perfo)
 print("Nombre de feuilles restantes:", n_reste)
 
