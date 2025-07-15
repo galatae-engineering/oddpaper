@@ -1,5 +1,6 @@
 import sys
 import RPi.GPIO as GPIO
+import cv2
 import time
 import random as rand
 sys.path.append('../galatae-api/')
