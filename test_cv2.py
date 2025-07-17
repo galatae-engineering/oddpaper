@@ -23,6 +23,8 @@ while True:
     print("Detected markers:", ids)
     if ids is not None:
         cv2.aruco.drawDetectedMarkers(frame,corners,ids)
+        for i in ids:
+            print(i[0])
     cv2.imshow('Camera',frame)
     
     if cv2.waitKey(1) == ord('q'):
