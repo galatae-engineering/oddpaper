@@ -12,7 +12,7 @@ from robot import Robot
 """  ###################  SETUP   #################### """
 
 # Video feed setup
-cam = cv2.VideoCapture(0)
+#cam = cv2.VideoCapture(0)
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 parameters = cv2.aruco.DetectorParameters()
 
@@ -66,7 +66,7 @@ GPIO.setup(Push_single,GPIO.IN,pull_up_down=GPIO.PUD_UP)
 
 """  ###################  END SETUP   #################### """
 """  ############  USER CONFIGURATION MODE  ############## """
-n_cahier = 54    #number of pages in the book
+n_cahier = 14    #number of pages in the book
 print("")
 print("Choose if random or not")
 print("If random, push left, if single pile, push right")
@@ -78,88 +78,96 @@ while (b_random and b_single):
 """  ############  USER CONFIGURATION END   ############## """
 
 n_max = 10  ## nombre de feuilles maximales autorisées dans la perforatrice
-n_perfo = n_cahier/n_max ## nombre de perforations pour un cahier complet
+n_perfo = int(n_cahier/n_max) ## nombre de perforations pour un cahier complet
 n_reste = n_cahier%n_max ## nombre de feuilles restantes a perforer pour completer le cahier
 print("Nombre de perforations de paquets de 10:", n_perfo)
 print("Nombre de feuilles restantes:", n_reste)
-
-for n in range(n_max):
-    
-    """ Checking the wheter the piles are empty"""
-    ret,frame = cam.read()
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    #detection d un marquer aruco appartenant a la bibliotheque definie
-    detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
-    #recuperation du data de l aruco detecte
-    corners, ids, rejected = detector.detectMarkers(gray)
-    print("arucos detected: ",ids)   #ids is the identifiant of the piles that are empty
-
-    if ids is not None:   
-        cv2.aruco.drawDetectedMarkers(frame,corners,ids)
-    cv2.imshow('Camera',frame)
-
-    time.sleep(1)
-    
-    """ Start feeding the perforatrice process"""
-    if  len(ids)<pile_max :
-        print("")
-        print("Starting with paper n:",n)
-        print("brandom: ",b_random)
-        print("bnormal: ",b_normal)
-        rand_pile = 0
-        if not b_random :
-            print("Random mode chosen")
-            rand_pile = rand.randint(0,pile_max-1)
-            print("Pile selected : ",rand_pile)
-            while [rand_pile] in ids :
-                rand_pile = rand.randint(0,pile_max-1)
-                print("Pile selected : ",rand_pile)
-        elif not b_single :
-            print("Normal mode chosen")
-            while [rand_pile] in ids :
-                rand_pile +=1
-                print("Pile selected : ",rand_pile)
-        print("will go to pile",rand_pile+1)
-        xpile = l_xpile[rand_pile]
-        ypile = l_ypile[rand_pile]
-        bpile = l_bpile[rand_pile]
-
-        print("x coordinate:",xpile,"; y coordinate:",ypile,"; b coordinate:",bpile)
-
-        print("Going above the pile")
-        r.go_to_point([xpile,ypile,zpile,apile,bpile])
-
-
-        print("Descending until contact")
-        r.set_joint_speed(probe_speed)
-        probe = r.probe([xpile,ypile,-30,apile,bpile])
-
-        if probe==True:
-            print("Starting vacuum")
-            GPIO.output(Relais,GPIO.HIGH)    ### Turn on the vacuun
-            time.sleep(5)
-            
-        print("going up again")
-        r.set_joint_speed(normal_speed)
-        r.go_to_point([xpile,ypile,zpile,apile,bpile])
-
-        print("going in front of the perforatrice")
-        r.go_to_point([xperfo-200,yperfo,zperfo,aperfo,bperfo])
-
-        print("probing for perforatrice")
-        r.set_joint_speed(probe_speed)
-        probe = r.probe([xperfo,yperfo,zperfo,aperfo,bperfo])
-
-        GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuun
-        time.sleep(3)
-        
-        print("going in front of the perforatrice")
-        r.set_joint_speed(normal_speed)
-        r.go_to_point([xperfo-200,yperfo,zperfo,aperfo,bperfo])        
+for i_perfo in range(n_perfo+1):
+    if i_perfo == n_perfo:
+        n_loop = n_reste
     else:
-        print("zero paper left")
-        break
-print("returning to home position")
-r.go_to_foetus_pos()
-cam.release()
-cv2.destroyAllWindows()
+        n_loop = n_max
+    if n_loop >0 :
+        for n in range(n_loop):
+            cam = cv2.VideoCapture(0)
+            time.sleep(0.5)
+            """ Checking the wheter the piles are empty"""
+            ret,frame = cam.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            #detection d un marquer aruco appartenant a la bibliotheque definie
+            detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
+            #recuperation du data de l aruco detecte
+            corners, ids, rejected = detector.detectMarkers(gray)
+            print("arucos detected: ",ids)   #ids is the identifiant of the piles that are empty
+
+            if ids is not None:   
+                cv2.aruco.drawDetectedMarkers(frame,corners,ids)
+            cv2.imshow('Camera',frame)
+            
+            cam.release()
+            cv2.destroyAllWindows()
+            
+            """ Start feeding the perforatrice process"""
+            if  len(ids)<pile_max :
+                print("")
+                print("Starting with paper n:",n + i_perfo*10)
+                print("brandom: ",b_random)
+                print("bnormal: ",b_single)
+                rand_pile = 0
+                if not b_random :
+                    print("Random mode chosen")
+                    rand_pile = rand.randint(0,pile_max-1)
+                    print("Pile selected : ",rand_pile)
+                    while [rand_pile] in ids :
+                        rand_pile = rand.randint(0,pile_max-1)
+                        print("Pile selected : ",rand_pile)
+                elif not b_single :
+                    print("Normal mode chosen")
+                    while [rand_pile] in ids :
+                        rand_pile +=1
+                        print("Pile selected : ",rand_pile)
+                print("will go to pile",rand_pile+1)
+                xpile = l_xpile[rand_pile]
+                ypile = l_ypile[rand_pile]
+                bpile = l_bpile[rand_pile]
+
+                print("x coordinate:",xpile,"; y coordinate:",ypile,"; b coordinate:",bpile)
+
+                print("Going above the pile")
+                r.go_to_point([xpile,ypile,zpile,apile,bpile])
+
+
+                print("Descending until contact")
+                r.set_joint_speed(probe_speed)
+                probe = r.probe([xpile,ypile,-30,apile,bpile])
+
+                if probe==True:
+                    print("Starting vacuum")
+                    GPIO.output(Relais,GPIO.HIGH)    ### Turn on the vacuun
+                    time.sleep(5)
+                    
+                print("going up again")
+                r.set_joint_speed(normal_speed)
+                r.go_to_point([xpile,ypile,zpile,apile,bpile])
+
+                print("going in front of the perforatrice")
+                r.go_to_point([xperfo-200,yperfo,zperfo,aperfo,bperfo])
+
+                print("probing for perforatrice")
+                r.set_joint_speed(probe_speed)
+                probe = r.probe([xperfo,yperfo,zperfo,aperfo,bperfo])
+
+                GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuun
+                time.sleep(3)
+                
+                print("going in front of the perforatrice")
+                r.set_joint_speed(normal_speed)
+                r.go_to_point([xperfo-200,yperfo,zperfo,aperfo,bperfo])        
+            else:
+                print("zero paper left")
+                break
+        print("returning to home position")
+        r.go_to_foetus_pos()
+        r.set_joint_speed(normal_speed)
+        r.reset_pos()
+
