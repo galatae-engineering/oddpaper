@@ -48,11 +48,12 @@ zperfo=150
 aperfo=110
 bperfo=0
 
-xtas1 = 150
-ytas1 = 250
+xtas1 = 200
+ytas1 = 350
 ztas = 300
 atas = apile
-bpile1 = 0
+btas = 0
+
 l_xpile = [xpile13,xpile24,xpile13,xpile24]
 l_ypile = [ypile12,ypile12,ypile34,ypile34]
 l_bpile = [bpile1,bpile2,bpile3,bpile4]
@@ -72,7 +73,7 @@ GPIO.setup(Push_single,GPIO.IN,pull_up_down=GPIO.PUD_UP)
 
 """  ###################  END SETUP   #################### """
 """  ############  USER CONFIGURATION MODE  ############## """
-n_cahier = 2    #number of pages in the book
+n_cahier = 14    #number of pages in the book
 print("")
 print("Choose if random or not")
 print("If random, push left, if single pile, push right")
@@ -110,11 +111,10 @@ for i_perfo in range(n_perfo+1):
                 cv2.aruco.drawDetectedMarkers(frame,corners,ids)
             else:
                 ids = []
-            cv2.imshow('Camera',frame)
             
             cam.release()
-            cv2.destroyAllWindows()
             if  len(ids)<pile_max :
+                b_empty = False
                 print("")
                 print("Starting with paper ",n +1 + i_perfo*10)
                 rand_pile = 0
@@ -131,8 +131,6 @@ for i_perfo in range(n_perfo+1):
                 xpile = l_xpile[rand_pile]
                 ypile = l_ypile[rand_pile]
                 bpile = l_bpile[rand_pile]
-
-                print("x coordinate:",xpile,"; y coordinate:",ypile,"; b coordinate:",bpile)
 
                 print("Going above the pile")
                 r.go_to_point([xpile,ypile,zpile,apile,bpile])
@@ -170,23 +168,29 @@ for i_perfo in range(n_perfo+1):
                 r.go_to_point([xperfo-200,yperfo,zperfo,aperfo,bperfo])        
             else:
                 print("zero paper left")
+                b_empty = True
                 break
         """ ############### END LOADING PERFO ############### """
         """ ############### START OF PERFO ###############"""
         time.sleep(0.5)
         r.set_joint_speed(probe_speed)
-        r.go_to_point([p_perfo[0]-28,p_perfo[1]-150,p_perfo[2],p_perfo[3],p_perfo[4]])
+        print("pushing the papers to the side")
+        r.go_to_point([p_perfo[0]-27,p_perfo[1]-150,p_perfo[2],p_perfo[3],p_perfo[4]])
         time.sleep(2)
-        r.go_to_point([p_perfo[0]-28,p_perfo[1],p_perfo[2],p_perfo[3],p_perfo[4]])
-        time.sleep(2)
-        print("going in front of the perforatrice")
-        r.set_joint_speed(normal_speed)
-        r.go_to_point([xperfo-200,yperfo,zperfo,aperfo,bperfo])
-        time.sleep(4)
+        r.go_to_point([p_perfo[0]-27,p_perfo[1]-100,p_perfo[2],p_perfo[3],p_perfo[4]])
+        r.go_to_point([p_perfo[0]-10,p_perfo[1],p_perfo[2],p_perfo[3],p_perfo[4]])
+
         #### PUT HERE THE ACTIVATION OF THE PERFORATRICE
         """ ############### END OF PERFO ##############"""
         """ ############### SART UNLOADING ############"""
-        for i in range(n_loop):
+        for n in range(n_loop):
+            print("Starting unloadobg paper ",n +1 + i_perfo*10)
+            
+            print("going in front of the perforatrice")
+            r.set_joint_speed(normal_speed)
+            r.go_to_point([xperfo-200,yperfo,zperfo,aperfo,bperfo])
+            time.sleep(0.5)
+            
             print("probing for the perfo")
             r.set_joint_speed(probe_speed)
             probe = r.probe([xperfo,yperfo,zperfo,aperfo,bperfo])
@@ -194,13 +198,28 @@ for i_perfo in range(n_perfo+1):
                 print("Starting vacuum")
                 GPIO.output(Relais,GPIO.HIGH)    ### Turn on the vacuum
                 time.sleep(5)
+                
             print("taking out the paper from the slot")
             p_perfo = r.get_tool_pose()
-            r.go_to_point([p_perfo[0]+math.sin(math.radians(20))*60,p_perfo[1],p_perfo[2]+math.sin(math.radians(20))*60,p_perfo[3],p_perfo[4]])
+            r.go_to_point([p_perfo[0]-10,p_perfo[1],p_perfo[2],p_perfo[3],p_perfo[4]])
+            r.go_to_point([p_perfo[0]-10+math.sin(math.radians(10))*100,p_perfo[1],p_perfo[2]+math.cos(math.radians(10))*100,p_perfo[3],p_perfo[4]])
             time.sleep(1)
+            
             print("going in front of the perforatrice")
             r.set_joint_speed(normal_speed)
             r.go_to_point([xperfo-200,yperfo,zperfo,aperfo,bperfo])
+            
+            print("going above a 'tas'")
+            r.go_to_point([xtas1,ytas1,ztas,atas,btas])
+            
+            print("going down until contact")
+            r.set_joint_speed(probe_speed)
+            probe = r.probe([xtas1,ytas1,-30,atas,btas])            
+            GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuum
+            time.sleep(5)
+            
+            print("going above a 'tas'")
+            r.go_to_point([xtas1,ytas1,ztas,atas,btas])
             
         """ ############### END UNLOADING  ############"""
         print("returning to home position")
