@@ -22,23 +22,27 @@ rand.seed()
 
 # Robot setup
 r=Robot('/dev/ttyACM0')
-normal_speed = 80
-probe_speed = 15
+normal_speed = 100
+probe_speed = 30
 r.set_joint_speed(normal_speed)
 r.reset_pos()
 
 # Coordinates setup
 pile_max = 4   # number of piles in the setup
 
-xpile13=150    
-xpile24=0
-ypile12=-400
-ypile34=-250
+xpile1=0
+xpile2=150
+xpile3=300
+xpile4=300
+ypile1=-300
+ypile2=-300
+ypile3=-300
+ypile4=-300
 zpile=300
 apile=180
-bpile1=0
+bpile1=20
 bpile2=0
-bpile3=0
+bpile3=23
 bpile4=0
 
 
@@ -52,10 +56,10 @@ xtas1 = 200
 ytas1 = 350
 ztas = 300
 atas = apile
-btas = 0
+btas1 = 0
 
-l_xpile = [xpile13,xpile24,xpile13,xpile24]
-l_ypile = [ypile12,ypile12,ypile34,ypile34]
+l_xpile = [xpile1,xpile2,xpile3,xpile4]
+l_ypile = [ypile1,ypile2,ypile3,ypile4]
 l_bpile = [bpile1,bpile2,bpile3,bpile4]
 
 # Raspberry pins setup --> now defined through the BCM mode
@@ -65,15 +69,25 @@ GPIO.setmode(GPIO.BCM)
 Relais = 18
 Push_random = 27
 Push_single = 17
+Push_stop = 23
 
 GPIO.setup(Relais,GPIO.OUT)
 GPIO.output(Relais,GPIO.LOW)    ##To make sure the relais starts at low in the program
 GPIO.setup(Push_random,GPIO.IN,pull_up_down=GPIO.PUD_UP)  #in PUD_UP to avoid noise in the boolean feedback
 GPIO.setup(Push_single,GPIO.IN,pull_up_down=GPIO.PUD_UP)
+GPIO.setup(Push_stop,GPIO.IN,pull_up_down=GPIO.PUD_UP)  # input to stop the program completely
 
+def Push_stop_Handler(pin):
+    print("Program has been stopped manually")
+    print("Returning to home position")
+    GPIO.output(Relais,GPIO.LOW) 
+    r.set_joint_speed(normal_speed)
+    r.go_to_foetus_pos()
+    r.reset_pos()
+GPIO.add_event_detect(Push_stop,GPIO.FALLING,callback = Push_stop_Handler, bouncetime = 1000)
 """  ###################  END SETUP   #################### """
 """  ############  USER CONFIGURATION MODE  ############## """
-n_cahier = 50    #number of pages in the book
+n_cahier = 5    #number of pages in the book
 print("")
 print("Choose if random or not")
 print("If random, push left, if single pile, push right")
@@ -138,7 +152,7 @@ for i_perfo in range(n_perfo+1):
 
                 print("Descending until contact")
                 r.set_joint_speed(probe_speed)
-                probe = r.probe([xpile,ypile,-30,apile,bpile])
+                probe = r.probe([xpile,ypile,20,apile,bpile])
 
                 if probe==True:
                     print("Starting vacuum")
@@ -210,21 +224,19 @@ for i_perfo in range(n_perfo+1):
                 r.go_to_point([xperfo-200,yperfo,zperfo,aperfo,bperfo])
                 
                 print("going above a 'tas'")
-                r.go_to_point([xtas1,ytas1,ztas,atas,btas])
+                r.go_to_point([xtas1,ytas1,ztas,atas,btas1])
                 
                 print("going down until contact")
                 r.set_joint_speed(probe_speed)
-                probe = r.probe([xtas1,ytas1,-30,atas,btas])            
+                probe = r.probe([xtas1,ytas1,-30,atas,btas1])            
                 GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuum
                 time.sleep(5)
                 
                 print("going above a 'tas'")
-                r.go_to_point([xtas1,ytas1,ztas,atas,btas])
+                r.go_to_point([xtas1,ytas1,ztas,atas,btas1])
             
         """ ############### END UNLOADING  ############"""
         print("returning to home position")
         r.set_joint_speed(normal_speed)
         r.go_to_foetus_pos()
-        r.set_joint_speed(normal_speed)
         r.reset_pos()
-
