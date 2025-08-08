@@ -97,7 +97,7 @@ def Push_stop_Handler(pin):
 #GPIO.add_event_detect(Push_stop,GPIO.FALLING,callback = Push_stop_Handler, bouncetime = 1000)
 
 """  ############  USER CONFIGURATION MODE  ############## """
-n_cahier = 10    #number of pages in the book
+n_cahier = 1    #number of pages in the book
 print("")
 print("Choose if random or not")
 print("If random, push left, if single pile, push right")
@@ -176,23 +176,23 @@ while True:
                         r.linear_move_to_point([xpile,ypile,zpile,apile,bpile])
 
                         print("going in front of the perforatrice")
-                        r.go_to_point([xperfodrop-200,yperfo,zperfodrop,aperfo,bperfo])
-                        r.go_to_point([xperfodrop-50,yperfo,zperfodrop+50*math.sin(math.radians(20))*math.sin(math.radians(70)),aperfo,bperfo])
+                        r.go_to_point([xperfopick-200,yperfo,zperfopick,aperfo,bperfo])       ##set to drop later
+                        r.go_to_point([xperfopick-50,yperfo,zperfopick+50*math.sin(math.radians(20))*math.sin(math.radians(70)),aperfo,bperfo])     ##set to drop later
                         
                         print("probing for perforatrice")
                         r.set_joint_speed(probe_speed)
-                        probe = r.linear_probe([xperfodrop,yperfo,zperfodrop,aperfo,bperfo])
+                        probe = r.linear_probe([xperfopick,yperfo,zperfopick,aperfo,bperfo])     ##set to drop later
                         if probe == True :
                             p_perfo = r.get_tool_pose()
                             print("p_perfo: ",p_perfo)
                         else:
-                            p_perfo = [xperfodrop,yperfo,zperfodrop,aperfo,bperfo]
+                            p_perfo = [xperfopick,yperfo,zperfopick,aperfo,bperfo]     ##set to drop later
                         GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuun
                         time.sleep(5)
                         
                         print("going in front of the perforatrice")
                         r.set_joint_speed(normal_speed)
-                        r.go_to_point([xperfodrop-200,yperfo,zperfodrop,aperfo,bperfo])
+                        r.go_to_point([xperfopick-200,yperfo,zperfopick,aperfo,bperfo])     ##set to drop later
                         
                     else:
                         print("zero paper left")
@@ -214,9 +214,9 @@ while True:
                 time.sleep(0.5)
                 r.set_joint_speed(probe_speed)
                 print("pushing the papers to the side")
-                r.linear_move_to_point([p_perfo[0]-27-10,p_perfo[1]-150,p_perfo[2]-70,p_perfo[3],p_perfo[4]])
-                r.linear_move_to_point([p_perfo[0]-27-10,p_perfo[1]-100,p_perfo[2]-70,p_perfo[3],p_perfo[4]])
-                r.linear_move_to_point([p_perfo[0]-10-10,p_perfo[1],p_perfo[2]-70,p_perfo[3],p_perfo[4]])
+                r.linear_move_to_point([p_perfo[0]-27-10,p_perfo[1]-150,p_perfo[2],aperfo,bperfo])    ## put -70 in z for when zperfodrop
+                r.linear_move_to_point([p_perfo[0]-27-10,p_perfo[1]-100,p_perfo[2],aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-10-10,p_perfo[1],p_perfo[2],aperfo,bperfo])
             else:
                 print("Returning to home position")
                 GPIO.output(Relais,GPIO.LOW) 
