@@ -33,12 +33,12 @@ pile_max = 4   # number of piles in the setup
 
 xpile1=0
 xpile2=0
-xpile3=140
-xpile4=140
-ypile1=-300
-ypile2=-420
-ypile3=-300
-ypile4=-420
+xpile3=220
+xpile4=220
+ypile1=-260
+ypile2=-380
+ypile3=-260
+ypile4=-380
 zpile=300
 apile=180
 bpile1=0
@@ -164,7 +164,7 @@ while True:
 
                         print("Descending until contact")
                         r.set_joint_speed(probe_speed)
-                        probe = r.probe([xpile,ypile,20,apile,bpile])
+                        probe = r.linear_probe([xpile,ypile,40,apile,bpile])
 
                         if probe==True:
                             print("Starting vacuum")
@@ -173,7 +173,7 @@ while True:
                             
                         print("going up again")
                         r.set_joint_speed(normal_speed)
-                        r.go_to_point([xpile,ypile,zpile,apile,bpile])
+                        r.linear_move_to_point([xpile,ypile,zpile,apile,bpile])
 
                         print("going in front of the perforatrice")
                         r.go_to_point([xperfodrop-200,yperfo,zperfodrop,aperfo,bperfo])
@@ -181,7 +181,7 @@ while True:
                         
                         print("probing for perforatrice")
                         r.set_joint_speed(probe_speed)
-                        probe = r.probe([xperfodrop,yperfo,zperfodrop,aperfo,bperfo])
+                        probe = r.linear_probe([xperfodrop,yperfo,zperfodrop,aperfo,bperfo])
                         if probe == True :
                             p_perfo = r.get_tool_pose()
                             print("p_perfo: ",p_perfo)
@@ -214,9 +214,9 @@ while True:
                 time.sleep(0.5)
                 r.set_joint_speed(probe_speed)
                 print("pushing the papers to the side")
-                r.go_to_point([p_perfo[0]-27-10,p_perfo[1]-150,p_perfo[2]-70,p_perfo[3],p_perfo[4]])
-                r.go_to_point([p_perfo[0]-27-10,p_perfo[1]-100,p_perfo[2]-70,p_perfo[3],p_perfo[4]])
-                r.go_to_point([p_perfo[0]-10-10,p_perfo[1],p_perfo[2]-70,p_perfo[3],p_perfo[4]])
+                r.linear_move_to_point([p_perfo[0]-27-10,p_perfo[1]-150,p_perfo[2]-70,p_perfo[3],p_perfo[4]])
+                r.linear_move_to_point([p_perfo[0]-27-10,p_perfo[1]-100,p_perfo[2]-70,p_perfo[3],p_perfo[4]])
+                r.linear_move_to_point([p_perfo[0]-10-10,p_perfo[1],p_perfo[2]-70,p_perfo[3],p_perfo[4]])
             else:
                 print("Returning to home position")
                 GPIO.output(Relais,GPIO.LOW) 
@@ -241,7 +241,7 @@ while True:
                     
                     print("probing for the perfo")
                     r.set_joint_speed(probe_speed)
-                    probe = r.probe([xperfopick,yperfo,zperfopick,aperfo,bperfo])
+                    probe = r.linear_probe([xperfopick,yperfo,zperfopick,aperfo,bperfo])
                     if probe==True:
                         print("Starting vacuum")
                         GPIO.output(Relais,GPIO.HIGH)    ### Turn on the vacuum
@@ -249,8 +249,8 @@ while True:
                         
                     print("taking out the paper from the slot")
                     p_perfo = r.get_tool_pose()
-                    r.go_to_point([p_perfo[0]-10,p_perfo[1],p_perfo[2],p_perfo[3],p_perfo[4]])
-                    r.go_to_point([p_perfo[0]-10+math.sin(math.radians(10))*100,p_perfo[1],p_perfo[2]+math.cos(math.radians(10))*100,p_perfo[3],p_perfo[4]])
+                    r.linear_move_to_point([p_perfo[0]-10,p_perfo[1],p_perfo[2],p_perfo[3],p_perfo[4]])
+                    r.linear_move_to_point([p_perfo[0]-10+math.sin(math.radians(10))*100,p_perfo[1],p_perfo[2]+math.cos(math.radians(10))*100,p_perfo[3],p_perfo[4]])
                     time.sleep(1)
                     
                     print("going in front of the perforatrice")
@@ -262,12 +262,12 @@ while True:
                     
                     print("going down until contact")
                     r.set_joint_speed(probe_speed)
-                    probe = r.probe([xtas1,ytas1,20,atas,btas1])            
+                    probe = r.linear_probe([xtas1,ytas1,20,atas,btas1])            
                     GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuum
                     time.sleep(5)
                     
                     print("going above a 'tas'")
-                    r.go_to_point([xtas1,ytas1,ztas,atas,btas1])
+                    r.linear_move_to_point([xtas1,ytas1,ztas,atas,btas1])
                 else:
                     print("Returning to home position")
                     GPIO.output(Relais,GPIO.LOW) 
@@ -290,7 +290,7 @@ while True:
     
     r.set_joint_speed(probe_speed)
     print("probing for the separator pile")
-    probe = r.probe([xinser,yinser,20,ainser,binser])
+    probe = r.linear_probe([xinser,yinser,20,ainser,binser])
     if probe == True:
         print("Starting vacuum")
         GPIO.output(Relais,GPIO.HIGH)    ### Turn on the vacuum
@@ -298,16 +298,19 @@ while True:
         
     r.set_joint_speed(normal_speed)
     print("going above separator pile")
-    r.go_to_point([xinser,yinser,zinser,ainser,binser])
+    r.linear_move_to_point([xinser,yinser,zinser,ainser,binser])
     
     print("going above a 'tas'")
     r.go_to_point([xtas1,ytas1,ztas,atas,btas1])
     
     print("going down until contact")
     r.set_joint_speed(probe_speed)
-    probe = r.probe([xtas1,ytas1,20,atas,btas1])            
+    probe = r.linear_probe([xtas1,ytas1,20,atas,btas1])            
     GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuum
     time.sleep(5)
+    
+    print("going above a 'tas'")
+    r.linear_move_to_point([xtas1,ytas1,ztas,atas,btas1])
     
     print("returning to home position")
     r.set_joint_speed(normal_speed)
