@@ -97,7 +97,8 @@ def Push_stop_Handler(pin):
 #GPIO.add_event_detect(Push_stop,GPIO.FALLING,callback = Push_stop_Handler, bouncetime = 1000)
 
 """  ############  USER CONFIGURATION MODE  ############## """
-n_cahier = 1    #number of pages in the book
+n_cahier = int(input("Rentrez le nombre de feuilles par cahier: "))
+#n_cahier = 2    #number of pages in the book
 print("")
 print("Choose if random or not")
 print("If random, push left, if single pile, push right")
@@ -114,7 +115,19 @@ n_reste = n_cahier%n_max ## nombre de feuilles restantes a perforer pour complet
 print("Nombre de perforations de paquets de 10:", n_perfo)
 print("Nombre de feuilles restantes:", n_reste)
 
-while True:
+cam = cv2.VideoCapture(0)
+time.sleep(1.5)
+ret,frame = cam.read()
+gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)  #detection des marqueurs arucos
+corners, ids, rejected = detector.detectMarkers(gray)  #ids is the identifiant of the piles that are empty
+if ids is not None:
+    b_empty = bool(len(ids)==pile_max)
+else:
+    b_empty = False
+cam.release()
+
+while (b_empty==False):
     """  ########### SART LOADING PERFORATOR  ######### """
     for i_perfo in range(n_perfo+1):
         if i_perfo == n_perfo:
@@ -122,27 +135,24 @@ while True:
         else:
             n_loop = n_max
         if n_loop >0 :
+            n_paper = 0
             for n in range(n_loop):
                 if stop == False:
                     cam = cv2.VideoCapture(0)
                     time.sleep(1)
                     ret,frame = cam.read()
                     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                    #detection d un marquer aruco appartenant a la bibliotheque definie
                     detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
-                    #recuperation du data de l aruco detecte
                     corners, ids, rejected = detector.detectMarkers(gray)  #ids is the identifiant of the piles that are empty
-
-                    if ids is not None:   
-                        cv2.aruco.drawDetectedMarkers(frame,corners,ids)
+                    if ids is not None:
+                        b_empty = bool(len(ids)==pile_max)
                     else:
-                        ids = []
-                    
-                    cam.release()
-                    if  len(ids)<pile_max :
                         b_empty = False
+                    cam.release()
+                    if  b_empty == False :
                         print("")
                         print("Starting with paper ",n +1 + i_perfo*10)
+                        n_paper = n+1     ### to keep sight of the number of papers
                         rand_pile = 0
                         if not b_random :
                             print("Random mode chosen")
@@ -161,7 +171,6 @@ while True:
                         print("Going above the pile")
                         r.go_to_point([xpile,ypile,zpile,apile,bpile])
 
-
                         print("Descending until contact")
                         r.set_joint_speed(probe_speed)
                         probe = r.linear_probe([xpile,ypile,40,apile,bpile])
@@ -169,7 +178,7 @@ while True:
                         if probe==True:
                             print("Starting vacuum")
                             GPIO.output(Relais,GPIO.HIGH)    ### Turn on the vacuun
-                            time.sleep(5)
+                            time.sleep(3)
                             
                         print("going up again")
                         r.set_joint_speed(normal_speed)
@@ -188,7 +197,7 @@ while True:
                         else:
                             p_perfo = [xperfopick,yperfo,zperfopick,aperfo,bperfo]     ##set to drop later
                         GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuun
-                        time.sleep(5)
+                        time.sleep(3)
                         
                         print("going in front of the perforatrice")
                         r.set_joint_speed(normal_speed)
@@ -196,8 +205,6 @@ while True:
                         
                     else:
                         print("zero paper left")
-                        b_empty = True
-                        n_loop = n+1
                         break
                 else :
                     print("Returning to home position")
@@ -210,10 +217,9 @@ while True:
                     exit()
 
             """ ############### START OF PERFORATION ###############"""
-            if stop == False:
-                time.sleep(0.5)
+            if stop == False and n_paper>0:   ## no stop happened of at least one paper in the perforatrice
                 r.set_joint_speed(probe_speed)
-                print("pushing the papers to the side")
+                print("\npushing the papers to the side\n")
                 r.linear_move_to_point([p_perfo[0]-27-10,p_perfo[1]-150,p_perfo[2],aperfo,bperfo])    ## put -70 in z for when zperfodrop
                 r.linear_move_to_point([p_perfo[0]-27-10,p_perfo[1]-100,p_perfo[2],aperfo,bperfo])
                 r.linear_move_to_point([p_perfo[0]-10-10,p_perfo[1],p_perfo[2],aperfo,bperfo])
@@ -229,7 +235,7 @@ while True:
             #### PUT HERE THE ACTIVATION OF THE PERFORATRICE
 
             """ ############### START UNLOADING PERFORATOR ############"""
-            for n in range(n_loop):
+            for n in range(n_paper):
                 if stop == False:
                     print("Starting unloading paper ",n +1 + i_perfo*10)
                     
@@ -245,7 +251,7 @@ while True:
                     if probe==True:
                         print("Starting vacuum")
                         GPIO.output(Relais,GPIO.HIGH)    ### Turn on the vacuum
-                        time.sleep(5)
+                        time.sleep(3)
                         
                     print("taking out the paper from the slot")
                     p_perfo = r.get_tool_pose()
@@ -264,9 +270,9 @@ while True:
                     r.set_joint_speed(probe_speed)
                     probe = r.linear_probe([xtas1,ytas1,20,atas,btas1])            
                     GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuum
-                    time.sleep(5)
+                    time.sleep(3)
                     
-                    print("going above a 'tas'")
+                    print("going above a 'tas'\n")
                     r.linear_move_to_point([xtas1,ytas1,ztas,atas,btas1])
                 else:
                     print("Returning to home position")
@@ -285,7 +291,7 @@ while True:
             r.reset_pos()
             
     """ ########### START ADDING SEPARATOR  ############"""
-    print("going above separator pile")
+    print("\ngoing above separator pile")
     r.go_to_point([xinser,yinser,zinser,ainser,binser])
     
     r.set_joint_speed(probe_speed)
@@ -294,7 +300,7 @@ while True:
     if probe == True:
         print("Starting vacuum")
         GPIO.output(Relais,GPIO.HIGH)    ### Turn on the vacuum
-        time.sleep(5)
+        time.sleep(3)
         
     r.set_joint_speed(normal_speed)
     print("going above separator pile")
@@ -307,12 +313,13 @@ while True:
     r.set_joint_speed(probe_speed)
     probe = r.linear_probe([xtas1,ytas1,20,atas,btas1])            
     GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuum
-    time.sleep(5)
+    time.sleep(3)
     
     print("going above a 'tas'")
     r.linear_move_to_point([xtas1,ytas1,ztas,atas,btas1])
     
     print("returning to home position")
+    print("Cahier is finished \n")
     r.set_joint_speed(normal_speed)
     r.go_to_foetus_pos()
     r.reset_pos()
