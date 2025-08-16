@@ -23,8 +23,8 @@ rand.seed()
 
 # Robot setup
 r=Robot('/dev/ttyACM0')
-normal_speed = 180
-probe_speed = 100
+normal_speed = 20
+probe_speed = 5
 r.set_joint_speed(normal_speed)
 r.reset_pos()
 
@@ -47,12 +47,13 @@ bpile3=35
 bpile4=28
 
 
-xperfodrop=410
-xperfopick=400
+xperfodrop=490
+xperfopick=490
 yperfo=0
-zperfodrop=290
-zperfopick=220
-aperfo=110
+zperfodrop=250
+zperfopick=125
+angle = 10
+aperfo=90+angle
 bperfo=0
 
 xinser = 200
@@ -137,6 +138,7 @@ while (b_empty==False):
         if n_loop >0 :
             n_paper = 0
             for n in range(n_loop):
+                print("rangeloop ramassage")
                 if stop == False:
                     cam = cv2.VideoCapture(0)
                     time.sleep(1)
@@ -148,12 +150,14 @@ while (b_empty==False):
                         b_empty = bool(len(ids)==pile_max)
                     else:
                         b_empty = False
+                        ids = []
                     cam.release()
                     if  b_empty == False :
                         print("")
                         print("Starting with paper ",n +1 + i_perfo*10)
                         n_paper = n+1     ### to keep sight of the number of papers
                         rand_pile = 0
+                        print(ids)
                         if not b_random :
                             print("Random mode chosen")
                             rand_pile = rand.randint(0,pile_max-1)
@@ -185,28 +189,31 @@ while (b_empty==False):
                         r.linear_move_to_point([xpile,ypile,zpile,apile,bpile])
 
                         print("going in front of the perforatrice")
-                        r.go_to_point([xperfopick-200,yperfo,zperfopick,aperfo,bperfo])       ##set to drop later
-                        r.go_to_point([xperfopick-50,yperfo,zperfopick+50*math.sin(math.radians(20))*math.sin(math.radians(70)),aperfo,bperfo])     ##set to drop later
+                        r.go_to_point([xperfopick-80,yperfo,zperfopick+100,aperfo,bperfo])       
+                        r.go_to_point([xperfopick-50,yperfo,zperfopick+50*math.sin(math.radians(angle))*math.sin(math.radians(90-angle))+100,aperfo,bperfo])    
+                        r.go_to_point([xperfopick-50,yperfo,zperfopick+50*math.sin(math.radians(angle))*math.sin(math.radians(90-angle)),aperfo,bperfo])  
                         
                         print("probing for perforatrice")
                         r.set_joint_speed(probe_speed)
-                        probe = r.linear_probe([xperfopick,yperfo,zperfopick,aperfo,bperfo])     ##set to drop later
+                        probe = r.linear_probe([xperfopick,yperfo,zperfopick,aperfo,bperfo])     
                         if probe == True :
                             p_perfo = r.get_tool_pose()
                             print("p_perfo: ",p_perfo)
                         else:
-                            p_perfo = [xperfopick,yperfo,zperfopick,aperfo,bperfo]     ##set to drop later
+                            p_perfo = [xperfopick,yperfo,zperfopick,aperfo,bperfo] 
                         GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuun
                         time.sleep(3)
                         
                         print("going in front of the perforatrice")
                         r.set_joint_speed(normal_speed)
-                        r.go_to_point([xperfopick-200,yperfo,zperfopick,aperfo,bperfo])     ##set to drop later
+                        r.go_to_point([p_perfo[0]-15,p_perfo[1],p_perfo[2],aperfo,bperfo])
+                        r.go_to_point([p_perfo[0]-15,p_perfo[1],p_perfo[2]+100,aperfo,bperfo])    
                         
                     else:
                         print("zero paper left")
                         break
                 else :
+                    print("Button stop pushed")
                     print("Returning to home position")
                     GPIO.output(Relais,GPIO.LOW) 
                     r.set_joint_speed(normal_speed)
@@ -217,12 +224,15 @@ while (b_empty==False):
                     exit()
 
             """ ############### START OF PERFORATION ###############"""
-            if stop == False and n_paper>0:   ## no stop happened of at least one paper in the perforatrice
+            if stop == False and n_paper>0:   
                 r.set_joint_speed(probe_speed)
                 print("\npushing the papers to the side\n")
-                r.linear_move_to_point([p_perfo[0]-27-10,p_perfo[1]-150,p_perfo[2],aperfo,bperfo])    ## put -70 in z for when zperfodrop
-                r.linear_move_to_point([p_perfo[0]-27-10,p_perfo[1]-100,p_perfo[2],aperfo,bperfo])
-                r.linear_move_to_point([p_perfo[0]-10-10,p_perfo[1],p_perfo[2],aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-27,p_perfo[1]-150,p_perfo[2]+100,aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-27,p_perfo[1]-150,p_perfo[2],aperfo,bperfo])   
+                r.linear_move_to_point([p_perfo[0]-27,p_perfo[1]-100,p_perfo[2],aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-10,p_perfo[1],p_perfo[2],aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-10,p_perfo[1]+30,p_perfo[2],aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-10,p_perfo[1],p_perfo[2]+100,aperfo,bperfo])
             else:
                 print("Returning to home position")
                 GPIO.output(Relais,GPIO.LOW) 
@@ -241,12 +251,14 @@ while (b_empty==False):
                     
                     print("going in front of the perforatrice")
                     r.set_joint_speed(normal_speed)
-                    r.go_to_point([xperfopick-200,yperfo,zperfopick,aperfo,bperfo])
-                    r.go_to_point([xperfopick-50,yperfo,zperfopick+50*math.sin(math.radians(20))*math.sin(math.radians(70)),aperfo,bperfo])
-                    time.sleep(0.5)
+                    r.go_to_point([xperfopick-80,yperfo,zperfopick+100,aperfo,bperfo])
+                    r.go_to_point([xperfopick-50,yperfo,zperfopick+50*math.sin(math.radians(angle))*math.sin(math.radians(90-angle))+100,aperfo,bperfo])
+                    r.go_to_point([xperfopick-50,yperfo,zperfopick+50*math.sin(math.radians(angle))*math.sin(math.radians(90-angle)),aperfo,bperfo])
                     
                     print("probing for the perfo")
                     r.set_joint_speed(probe_speed)
+                    print("xperfopick: ",xperfopick)
+                    print("zperfopick: ",zperfopick)
                     probe = r.linear_probe([xperfopick,yperfo,zperfopick,aperfo,bperfo])
                     if probe==True:
                         print("Starting vacuum")
@@ -255,8 +267,8 @@ while (b_empty==False):
                         
                     print("taking out the paper from the slot")
                     p_perfo = r.get_tool_pose()
-                    r.linear_move_to_point([p_perfo[0]-10,p_perfo[1],p_perfo[2],p_perfo[3],p_perfo[4]])
-                    r.linear_move_to_point([p_perfo[0]-10+math.sin(math.radians(10))*100,p_perfo[1],p_perfo[2]+math.cos(math.radians(10))*100,p_perfo[3],p_perfo[4]])
+                    r.linear_move_to_point([p_perfo[0]-15,p_perfo[1],p_perfo[2],p_perfo[3],p_perfo[4]])
+                    r.linear_move_to_point([p_perfo[0]-15+math.sin(math.radians(angle))*100,p_perfo[1],p_perfo[2]+math.cos(math.radians(angle))*100,p_perfo[3],p_perfo[4]])
                     time.sleep(1)
                     
                     print("going in front of the perforatrice")
