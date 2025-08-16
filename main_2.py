@@ -202,12 +202,12 @@ while (b_empty==False):
                         else:
                             p_perfo = [xperfopick,yperfo,zperfopick,aperfo,bperfo] 
                         GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuun
-                        time.sleep(3)
+                        time.sleep(4)
                         
                         print("going in front of the perforatrice")
                         r.set_joint_speed(normal_speed)
-                        r.go_to_point([p_perfo[0]-15,p_perfo[1],p_perfo[2],aperfo,bperfo])
-                        r.go_to_point([p_perfo[0]-15,p_perfo[1],p_perfo[2]+100,aperfo,bperfo])    
+                        r.go_to_point([p_perfo[0]-25,p_perfo[1],p_perfo[2],aperfo,bperfo])
+                        r.go_to_point([p_perfo[0]-25,p_perfo[1],p_perfo[2]+100,aperfo,bperfo])    
                         
                     else:
                         print("zero paper left")
@@ -227,12 +227,13 @@ while (b_empty==False):
             if stop == False and n_paper>0:   
                 r.set_joint_speed(probe_speed)
                 print("\npushing the papers to the side\n")
-                r.linear_move_to_point([p_perfo[0]-27,p_perfo[1]-150,p_perfo[2]+100,aperfo,bperfo])
-                r.linear_move_to_point([p_perfo[0]-27,p_perfo[1]-150,p_perfo[2],aperfo,bperfo])   
-                r.linear_move_to_point([p_perfo[0]-27,p_perfo[1]-100,p_perfo[2],aperfo,bperfo])
-                r.linear_move_to_point([p_perfo[0]-10,p_perfo[1],p_perfo[2],aperfo,bperfo])
-                r.linear_move_to_point([p_perfo[0]-10,p_perfo[1]+30,p_perfo[2],aperfo,bperfo])
-                r.linear_move_to_point([p_perfo[0]-10,p_perfo[1],p_perfo[2]+100,aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-25,p_perfo[1]-200,p_perfo[2]+100,aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-25,p_perfo[1]-200,p_perfo[2]-5,aperfo,bperfo])   
+                r.linear_move_to_point([p_perfo[0]-25,p_perfo[1]-130,p_perfo[2]-5,aperfo,bperfo])
+                #r.linear_move_to_point([p_perfo[0]-10,p_perfo[1],p_perfo[2],aperfo,bperfo])
+                #r.linear_move_to_point([p_perfo[0]-10,p_perfo[1]+30,p_perfo[2],aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-35,p_perfo[1]-100,p_perfo[2],aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-35,p_perfo[1]-100,p_perfo[2]+100,aperfo,bperfo])
             else:
                 print("Returning to home position")
                 GPIO.output(Relais,GPIO.LOW) 
@@ -267,8 +268,8 @@ while (b_empty==False):
                         
                     print("taking out the paper from the slot")
                     p_perfo = r.get_tool_pose()
-                    r.linear_move_to_point([p_perfo[0]-15,p_perfo[1],p_perfo[2],p_perfo[3],p_perfo[4]])
-                    r.linear_move_to_point([p_perfo[0]-15+math.sin(math.radians(angle))*100,p_perfo[1],p_perfo[2]+math.cos(math.radians(angle))*100,p_perfo[3],p_perfo[4]])
+                    r.linear_move_to_point([p_perfo[0]-20,p_perfo[1],p_perfo[2],p_perfo[3],p_perfo[4]])
+                    r.linear_move_to_point([p_perfo[0]-20,p_perfo[1],p_perfo[2]+150,p_perfo[3],p_perfo[4]])
                     time.sleep(1)
                     
                     print("going in front of the perforatrice")
@@ -282,7 +283,7 @@ while (b_empty==False):
                     r.set_joint_speed(probe_speed)
                     probe = r.linear_probe([xtas1,ytas1,20,atas,btas1])            
                     GPIO.output(Relais,GPIO.LOW)    ### Turn off the vacuum
-                    time.sleep(3)
+                    time.sleep(4)
                     
                     print("going above a 'tas'\n")
                     r.linear_move_to_point([xtas1,ytas1,ztas,atas,btas1])
