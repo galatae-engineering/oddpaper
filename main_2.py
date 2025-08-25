@@ -29,7 +29,7 @@ r.set_joint_speed(normal_speed)
 r.reset_pos()
 
 # Coordinates setup
-pile_max = 4   # number of piles in the setup
+pile_max = 2   # number of piles in the setup
 
 xpile1=0
 xpile2=0
@@ -68,9 +68,9 @@ ztas = 300
 atas = apile
 btas1 = 0
 
-l_xpile = [xpile1,xpile2,xpile3,xpile4]
-l_ypile = [ypile1,ypile2,ypile3,ypile4]
-l_bpile = [bpile1,bpile2,bpile3,bpile4]
+l_xpile = [xpile1,xpile2] #,xpile3,xpile4]
+l_ypile = [ypile1,ypile2] #,ypile3,ypile4]
+l_bpile = [bpile1,bpile2] #,bpile3,bpile4]
 
 # Raspberry pins setup --> now defined through the BCM mode
 GPIO.setmode(GPIO.BCM)
