@@ -11,7 +11,7 @@ from robot import Robot
 
 print("cv2.__version__ : ",cv2.__version__)
 print("GPIO.VERSION :",GPIO.VERSION)
-"""  ###################  SETUP   #################### """
+"""  ###################  SETUP  #################### """
 
 # Video feed setup
 #cam = cv2.VideoCapture(0)
@@ -227,13 +227,13 @@ while (b_empty==False):
             if stop == False and n_paper>0:   
                 r.set_joint_speed(probe_speed)
                 print("\npushing the papers to the side\n")
-                r.linear_move_to_point([p_perfo[0]-25,p_perfo[1]-200,p_perfo[2]+100,aperfo,bperfo])
-                r.linear_move_to_point([p_perfo[0]-25,p_perfo[1]-200,p_perfo[2]-5,aperfo,bperfo])   
-                r.linear_move_to_point([p_perfo[0]-25,p_perfo[1]-130,p_perfo[2]-5,aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-33,p_perfo[1]-200,p_perfo[2]+100,aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-30,p_perfo[1]-200,p_perfo[2]-5,aperfo,bperfo])   
+                r.linear_move_to_point([p_perfo[0]-30,p_perfo[1]-130,p_perfo[2]-5,aperfo,bperfo])
                 #r.linear_move_to_point([p_perfo[0]-10,p_perfo[1],p_perfo[2],aperfo,bperfo])
                 #r.linear_move_to_point([p_perfo[0]-10,p_perfo[1]+30,p_perfo[2],aperfo,bperfo])
-                r.linear_move_to_point([p_perfo[0]-35,p_perfo[1]-100,p_perfo[2],aperfo,bperfo])
-                r.linear_move_to_point([p_perfo[0]-35,p_perfo[1]-100,p_perfo[2]+100,aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-35,p_perfo[1]-110,p_perfo[2],aperfo,bperfo])
+                r.linear_move_to_point([p_perfo[0]-35,p_perfo[1]-110,p_perfo[2]+100,aperfo,bperfo])
             else:
                 print("Returning to home position")
                 GPIO.output(Relais,GPIO.LOW) 
@@ -274,7 +274,7 @@ while (b_empty==False):
                     
                     print("going in front of the perforatrice")
                     r.set_joint_speed(normal_speed)
-                    r.go_to_point([xperfopick-200,yperfo,zperfopick,aperfo,bperfo])
+                    r.go_to_point([xperfopick-200,yperfo,zperfopick+150,aperfo,bperfo])
                     
                     print("going above a 'tas'")
                     r.go_to_point([xtas1,ytas1,ztas,atas,btas1])
